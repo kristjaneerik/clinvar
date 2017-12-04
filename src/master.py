@@ -4,7 +4,6 @@ Alternate implementation of master.bash with improved logging, skipping of comma
 Run with -h to see all options.
 """
 
-import configargparse
 from datetime import datetime
 import ftplib
 import os
