@@ -2,6 +2,7 @@ import unittest
 from group_by_allele import group_alleles, group_by_allele
 from StringIO import StringIO
 from parse_clinvar_xml import HEADER
+from group_by_allele import NUMERIC_FIELDS
 
 class TestGroupByAllele(unittest.TestCase):
 
@@ -53,17 +54,26 @@ class TestGroupByAlleleToy(unittest.TestCase):
 
         self.r1 = ['chrom1', 'pos1', 'ref1', 'alt1']
         for h in self.header[4:]:
-            self.r1.append(h + "1a;" + h + "1b")
+            if h in NUMERIC_FIELDS:
+                self.r1.append('1')
+            else:
+                self.r1.append(h + "1a;" + h + "1b")
 
         # should be joined with r1, but data is different
         self.r2 = ['chrom1', 'pos1', 'ref1', 'alt1']
         for h in self.header[4:]:
-            self.r2.append(h + "1c;" + h + "1d")
+            if h in NUMERIC_FIELDS:
+                self.r2.append('10')
+            else:
+                self.r2.append(h + "1c;" + h + "1d")
 
         # should not be joined with r1/r2 because alt is different
         self.r3 = ['chrom1', 'pos1', 'ref1', 'alt2']
         for h in self.header[4:]:
-            self.r3.append(h + "2a;" + h + "2b")
+            if h in NUMERIC_FIELDS:
+                self.r3.append('100')
+            else:
+                self.r3.append(h + "2a;" + h + "2b")
 
     def test_group_alleles(self):
         data1 = dict(zip(self.header, self.r1))
@@ -81,6 +91,8 @@ class TestGroupByAlleleToy(unittest.TestCase):
                 # no deduping should have occurred
                 self.assertEqual(combined_data2[h],
                                  "{h}1a;{h}1b;{h}1a;{h}1b;{h}1c;{h}1d".format(h=h))
+            elif h in NUMERIC_FIELDS:
+                self.assertEqual(combined_data2[h], '12')  # row one twice, row two once
             else:
                 # deduping *should* have occurred
                 self.assertEqual(combined_data2[h], "{h}1a;{h}1b;{h}1c;{h}1d".format(h=h))
@@ -104,6 +116,8 @@ class TestGroupByAlleleToy(unittest.TestCase):
                         # no deduping should have occurred
                         self.assertEqual(combined_data[h],
                                          "{h}1a;{h}1b;{h}1a;{h}1b;{h}1c;{h}1d".format(h=h))
+                    elif h in NUMERIC_FIELDS:
+                        self.assertEqual(combined_data[h], '12')
                     else:
                         # deduping *should* have occurred
                         self.assertEqual(combined_data[h], "{h}1a;{h}1b;{h}1c;{h}1d".format(h=h))
